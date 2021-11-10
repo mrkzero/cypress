@@ -41,13 +41,7 @@ macBuildFilters: &macBuildFilters
   <<: *onlyMainBranches
 
 windowsBuildFilters: &windowsBuildFilters
-  # <<: *onlyMainBranches
-  filters:
-    branches:
-      only:
-        - develop
-        - 9.0-release
-        - remove-appveyor
+  <<: *onlyMainBranches
 
 # executor to run on Windows
 # https://circleci.com/docs/2.0/executor-types/#using-the-windows-executor
@@ -241,7 +235,6 @@ commands:
       - run:
           name: Print working folder
           command: echo $PWD
-          # different for windows
       - run:
           name: print global yarn cache path
           command: echo $(yarn global bin)
@@ -2412,9 +2405,7 @@ windows-workflow: &windows-workflow
           - windows-create-build-artifacts
 
 workflows:
-  # linux:
-  #   <<: *linux-workflow
-  # mac:
-  #   <<: *mac-workflow
-  windows:
-    <<: *windows-workflow
+  linux:
+    <<: *linux-workflow
+  mac:
+    <<: *mac-workflow
