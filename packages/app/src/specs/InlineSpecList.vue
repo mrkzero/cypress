@@ -8,14 +8,14 @@
       <template v-if="tab === 'file-list'">
         <InlineSpecListRow
           v-for="spec in specs"
-          :key="spec.node.id"
-          :spec="spec.node"
+          :key="spec.absolute"
+          :spec="spec"
           :selected="isCurrentSpec(spec)"
         />
       </template>
       <template v-else>
         <InlineSpecListTree
-          :specs="specs.map(spec => spec.node)"
+          :specs="specs"
         />
       </template>
     </div>
@@ -23,13 +23,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ComputedRef, ref } from 'vue'
 import { gql } from '@urql/vue'
-import type { SpecNode_InlineSpecListFragment, Specs_InlineSpecListFragment } from '../generated/graphql'
+import type { Specs_InlineSpecListFragment } from '../generated/graphql'
 import { useSpecStore } from '../store'
 import InlineSpecListHeader from './InlineSpecListHeader.vue'
 import InlineSpecListRow from './InlineSpecListRow.vue'
 import InlineSpecListTree from './InlineSpecListTree.vue'
+
+import fuzzySort from 'fuzzysort'
+import type { FoundSpec } from '@packages/types'
+import type { FuzzyFoundSpec } from '@packages/frontend-shared/src/utils/buildSpecTree'
 
 gql`
 fragment SpecNode_InlineSpecList on SpecEdge {
@@ -63,26 +67,23 @@ const props = defineProps<{
 
 const specStore = useSpecStore()
 
-const isCurrentSpec = (spec: SpecNode_InlineSpecListFragment) => {
-  return spec.node.relative === specStore.activeSpec?.relative
+const isCurrentSpec = (spec: FoundSpec) => {
+  return spec.relative === specStore.activeSpec?.relative
 }
 
 const tab = ref('file-list')
 const search = ref('')
 
-const specs = computed(() => {
+const specs: ComputedRef<FuzzyFoundSpec[]> = computed(() => {
+  const specs = props.gql.specs?.edges || []
+
   if (!search.value) {
-    return props.gql.specs?.edges || []
+    return specs.map((spec) => ({ ...spec.node, indexes: [] as number[] }))
   }
 
-  return (
-    props.gql.specs?.edges.filter((edge) => {
-      return (
-        edge.node.fileName.toLowerCase() +
-        edge.node.specFileExtension.toLowerCase()
-      ).includes(search.value.toLocaleLowerCase())
-    }) || []
-  )
+  const res = fuzzySort.go(search.value, specs.map((spec) => spec.node) || [], { key: 'baseName' })
+
+  return res.map(({ obj, indexes }) => ({ ...obj, indexes }))
 })
 
 </script>

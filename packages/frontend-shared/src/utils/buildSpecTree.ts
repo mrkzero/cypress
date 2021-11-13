@@ -1,14 +1,16 @@
 import type { FoundSpec } from '@packages/types'
 
+export type FuzzyFoundSpec = FoundSpec & { indexes: number[] }
+
 export type SpecTreeNode = {
   value: string
   children: SpecTreeNode[]
   isLeaf: boolean
   parent?: SpecTreeNode
-  data?: FoundSpec
+  data?: FuzzyFoundSpec
 }
 
-export function buildSpecTree (specs: FoundSpec[], root: SpecTreeNode = { value: '/', isLeaf: false, children: [] }) {
+export function buildSpecTree (specs: FuzzyFoundSpec[], root: SpecTreeNode = { value: '/', isLeaf: false, children: [] }) {
   specs.forEach((spec) => buildSpecTreeRecursive(spec.relative, root, spec))
 
   collapseEmptyChildren(root)
@@ -16,7 +18,7 @@ export function buildSpecTree (specs: FoundSpec[], root: SpecTreeNode = { value:
   return root
 }
 
-export function buildSpecTreeRecursive (path: string, tree: SpecTreeNode, data?: FoundSpec) {
+export function buildSpecTreeRecursive (path: string, tree: SpecTreeNode, data?: FuzzyFoundSpec) {
   const [firstFile, ...rest] = path.split('/')
 
   if (rest.length < 1) {

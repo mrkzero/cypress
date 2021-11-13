@@ -25,6 +25,7 @@
         :file-name="spec.fileName"
         :extension="spec.specFileExtension"
         :selected="selected"
+        :indexes="spec.indexes"
       />
       <span
         class="
@@ -41,13 +42,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { FoundSpec } from '@packages/types'
+import type { FuzzyFoundSpec } from '@packages/frontend-shared/src/utils/buildSpecTree'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import SpecFileItem from './SpecFileItem.vue'
 
 const props = defineProps<{
-  spec: FoundSpec;
+  spec: FuzzyFoundSpec;
   selected: boolean;
 }>()
 

@@ -31,6 +31,7 @@
         :file-name="row.data?.fileName || row.value"
         :extension="row.data?.specFileExtension || ''"
         :selected="isCurrentSpec(row.data)"
+        :indexes="row.data?.indexes ?? []"
         class="ml-22px"
       />
       <DirectoryItem
@@ -46,7 +47,7 @@
 import type { FoundSpec } from '@packages/types'
 import { useCollapsibleTree, UseCollapsibleTreeNode } from '@packages/frontend-shared/src/composables/useCollapsibleTree'
 import { useListNavigation } from '@packages/frontend-shared/src/composables/useListNavigation'
-import { buildSpecTree, SpecTreeNode } from '@packages/frontend-shared/src/utils/buildSpecTree'
+import { buildSpecTree, FuzzyFoundSpec, SpecTreeNode } from '@packages/frontend-shared/src/utils/buildSpecTree'
 import SpecFileItem from './SpecFileItem.vue'
 import { computed, ref, Ref } from 'vue'
 import DirectoryItem from './DirectoryItem.vue'
@@ -54,14 +55,14 @@ import { useRouter } from 'vue-router'
 import { useSpecStore } from '../store'
 
 const props = defineProps<{
-  specs: FoundSpec[]
+  specs: FuzzyFoundSpec[]
 }>()
 
 const router = useRouter()
 
 const specStore = useSpecStore()
 
-const isCurrentSpec = (spec: FoundSpec | undefined) => {
+const isCurrentSpec = (spec: FuzzyFoundSpec | undefined) => {
   if (!spec) return false
 
   return spec.relative === specStore.activeSpec?.relative
